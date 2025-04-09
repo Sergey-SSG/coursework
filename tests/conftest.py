@@ -1,8 +1,7 @@
-import pytest
 import pandas as pd
+import pytest
 
 
-# Тестирование функции с использованием pytest
 @pytest.fixture
 def transactions_df():
     # Подготовка данных для тестов
@@ -11,5 +10,15 @@ def transactions_df():
         "Категория": ["Супермаркеты", "Дом и ремонт"],
         "Описание": ["Дикси", "Галамарт"],
         "Бонусы (включая кэшбэк)": [5, 2],
+    }
+    return pd.DataFrame(data)
+
+
+@pytest.fixture
+def sample_transactions():
+    data = {
+        "Дата платежа": pd.to_datetime(["31.12.2021", "29.12.2021", "28.12.2021", "17.12.2021"]),
+        "Категория": ["Супермаркеты", "Дом и ремонт", "Супермаркеты", "Супермаркеты"],
+        "Сумма платежа": [-161, -383, -381, -214],
     }
     return pd.DataFrame(data)
