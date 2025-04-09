@@ -1,29 +1,45 @@
 import json
 import logging
 
+import pandas as pd
+from src.utils import PATH_TO_FILE
+
+# Настройка логирования
+logging.basicConfig(
+    filename="../logs/services.log",
+    encoding="utf-8",
+    filemode="w",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG,
+)
+
+logger = logging.getLogger("services")
+
+
+def search_transactions(transactions_df, search_string):
+    """ Пользователь передает строку для поиска, возвращается JSON-ответ со всеми транзакциями,
+    содержащими запрос в описании или категории."""
+
+    logging.debug(f"Начинаем поиск: {search_string}")
+
+    # Фильтруем датафрейм по описанию и категории
+    filtered_df = transactions_df[
+        (transactions_df['Описание'].str.contains(search_string, case=False, na=False)) |
+        (transactions_df['Категория'].str.contains(search_string, case=False, na=False))
+        ]
+
+    logging.debug(f"Количество найденных транзакций: {len(filtered_df)}")
+
+    # Преобразуем отфильтрованный датафрейм в список словарей
+    transactions_list = filtered_df.to_dict(orient='records')
+
+    # Формируем JSON-ответ
+    json_response = json.dumps(transactions_list, ensure_ascii=False, indent=4)
+
+    return json_response
+
+
 # Пример массива транзакций
-transactions = [
-    {"id": 1, "description": "Покупка кофе", "category": "Еда"},
-    {"id": 2, "description": "Оплата за интернет", "category": "Услуги"},
-    {"id": 3, "description": "Покупка книги", "category": "Книги"},
-    {"id": 4, "description": "Посещение ресторана", "category": "Еда"},
-]
-
-def search_transactions(query):
-    # Приводим запрос к нижнему регистру для нечувствительного поиска
-    query = query.lower()
-
-    # Ищем транзакции, содержащие запрос в описании или категории
-    results = [
-        transaction for transaction in transactions
-        if query in transaction["Описание"].lower() or query in transaction["Категория"].lower()
-    ]
-
-    # Возвращаем результаты в формате JSON
-    return json.dumps(results)
-
-
-# Пример использования функции
-search_query = "еда"
-response = search_transactions(search_query)
-print(response)
+# transactions_data = pd.read_excel(PATH_TO_FILE)
+# transactions_df = pd.DataFrame(transactions_data)
+# print(search_transactions(transactions_df, 'Дом и ремонт'))
