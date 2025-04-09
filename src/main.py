@@ -15,4 +15,5 @@ if __name__ == "__main__":
     print(search_transactions(transactions_df, "Дом и ремонт"))
 
     transactions = pd.read_excel(PATH_TO_FILE)
-    print(spending_by_category(transactions, "Супермаркеты", "31.12.2021"))
+    transactions_df = pd.DataFrame(transactions)
+    print(spending_by_category(transactions_df, "Супермаркеты", "31.12.2021"))

@@ -76,7 +76,6 @@ def spending_by_category(transactions: pd.DataFrame, category: str, date: Option
     return total_expenses
 
 
-if __name__ == "__main__":
-    transactions = pd.read_excel(PATH_TO_FILE)
-    transactions_df = pd.DataFrame(transactions)
-    print(spending_by_category(transactions_df, "Супермаркеты", "31.12.2021"))
+# transactions = pd.read_excel(PATH_TO_FILE)
+# transactions_df = pd.DataFrame(transactions)
+# print(spending_by_category(transactions_df, "Супермаркеты", "31.12.2021"))
