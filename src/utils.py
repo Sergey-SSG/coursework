@@ -1,23 +1,26 @@
 import pandas as pd
 import requests
 import os
+import json
 
 from dotenv import load_dotenv
 from datetime import datetime
 
+from pandas.core.interchange.dataframe_protocol import DataFrame
+
 PATH_TO_FILE = "../data/operations.xlsx"
 
 
-def get_time_for_grating() -> str:
+def get_time_for_greeting() -> str:
     """ функцию, принимающую на вход строку с датой и временем в формате YYYY-MM-DD HH:MM:SS
     и возвращает приветствие"""
     user_date_time = datetime.now()
-    user_hoer = user_date_time.hour
-    if 5 <= user_hoer < 12:
+    user_hour = user_date_time.hour
+    if 5 <= user_hour < 12:
         return 'Доброе утро'
-    elif 12 <= user_hoer < 18:
+    elif 12 <= user_hour < 18:
         return 'Доброе день'
-    elif 18 <= user_hoer < 22:
+    elif 18 <= user_hour < 22:
         return 'Доброе вечер'
     else:
         return 'Доброй ночи'
@@ -33,7 +36,7 @@ def get_time_date(date_time: str, date_format: str = "%Y-%m-%d %H:%M:%S") -> tup
     return start_day.strftime(date_format_output), format_date.strftime(date_format_output)
 
 
-def slice_period(path_to_file, period_date):
+def slice_period(path_to_file: str, period_date: list) -> DataFrame:
     """ Функция для страницы «Главная» извлекает детали транзакций для каждой карты:
     - последние 4 цифры карты;
     - общие расходы;
@@ -60,26 +63,34 @@ API_URL = "https://api.apilayer.com/exchangerates_data"
 headers = {"apikey": os.getenv("API_KEY_exchange")}
 
 
-def convert_to_rub(amount, currency: dict) -> float:
+def convert_to_rub() -> str:
     """Функция принимает на вход транзакцию и возвращает сумму транзакции (amount) в рублях, тип данных —
     float. Если транзакция была в USD или EUR, происходит обращение к внешнему API для получения текущего курса валют и
     конвертации суммы операции в рубли."""
-    if currency == "RUB":
-        return float(amount)
+    currency_list = ["USD", "EUR"]
+    convert_to = "RUB"
+    new_currency_list = []
 
-    if currency in ["USD", "EUR"]:
-        response = requests.get(f"{API_URL}/convert?from={currency}&to=RUB&amount={amount}", headers=headers)
+    for currency in currency_list:
+        response = requests.get(f"{API_URL}/convert?from={currency}&to={convert_to}&amount=1", headers=headers)
 
         response.raise_for_status()
         conversion_data = response.json()
-        return float(conversion_data["result"])
+        currency_value = conversion_data.get('result')
 
-    return float(amount)
+        if currency_value is not None:
+            new_currency_list.append(currency_value)
+        else:
+            print("Ошибка: ключ 'result' не найден в ответе для:", currency)
+    result_json = json.dumps(new_currency_list, indent=4)
+    return result_json
+
 
 API_URL_ = "https://api.twelvedata.com"
 API_KEY_stocks = os.getenv('Secret_key')
 
-def get_price_stocks() -> list:
+
+def get_price_stocks() -> str:
     """ Функция, которая извлекает цены акций из списка S&P 500 путем вызова внешнего API."""
     stocks_list = ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
     price_stocks = []
@@ -89,5 +100,5 @@ def get_price_stocks() -> list:
         dict_result = response.json()
         price_element = dict_result.get('price')
         price_stocks.append(price_element)
-
-    return price_stocks
+    result_json = json.dumps(price_stocks, indent=4)
+    return result_json
