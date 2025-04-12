@@ -57,17 +57,14 @@ def spending_by_category(transactions: pd.DataFrame, category: str, date: Option
     # Определяем дату три месяца назад
     three_months_ago = date - pd.DateOffset(months=3)
 
-    transactions["Дата операции"] = pd.to_datetime(
-        transactions["Дата операции"],
-        format="%d.%m.%Y %H:%M:%S"
-    )
+    transactions["Дата операции"] = pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S")
 
     # Фильтруем дата фрейм по дате и категории
     filtered_df = transactions[
         (transactions["Дата операции"] >= three_months_ago)
         & (transactions["Дата операции"] <= date)
         & (transactions["Категория"] == category)
-        ]
+    ]
 
     # Суммируем траты по заданной категории
     total_expenses = filtered_df["Сумма операции"].sum()

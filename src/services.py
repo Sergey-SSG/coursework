@@ -21,14 +21,14 @@ def search_transactions(transactions_df, search_string):
 
     # Фильтруем датафрейм по описанию и категории
     filtered_df = transactions_df[
-        (transactions_df['Описание'].str.contains(search_string, case=False, na=False)) |
-        (transactions_df['Категория'].str.contains(search_string, case=False, na=False))
-        ]
+        (transactions_df["Описание"].str.contains(search_string, case=False, na=False))
+        | (transactions_df["Категория"].str.contains(search_string, case=False, na=False))
+    ]
 
     logger.debug(f"Количество найденных транзакций: {len(filtered_df)}")
 
     # Преобразуем отфильтрованный датафрейм в список словарей
-    transactions_list = filtered_df.to_dict(orient='records')
+    transactions_list = filtered_df.to_dict(orient="records")
 
     # Формируем JSON-ответ
     json_response = json.dumps(transactions_list, ensure_ascii=False, indent=4)
