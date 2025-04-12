@@ -1,16 +1,32 @@
+import pandas as pd
+import pytest
 from src.reports import spending_by_category
 
 
-def test_spending_by_category_no_date(sample_transactions):
-    result = spending_by_category(sample_transactions, "Супермаркеты")
-    assert result == -756  # Ожидаемая сумма за последние три месяца
+def test_spending_by_category_valid_date(mock_transactions):
+    total_spending = spending_by_category(
+        mock_transactions, category="Супермаркеты", date="30.04.2024 00:00:00"
+    )
+    assert total_spending == 300.0
 
 
-def test_get_spending_by_category_with_date(sample_transactions):
-    result = spending_by_category(sample_transactions, "Супермаркеты", "28.12.2021")
-    assert result == -595  # Ожидаемая сумма за период до 2023-03-01
+def test_spending_by_category_no_transactions(mock_transactions):
+    total_spending = spending_by_category(
+        mock_transactions, category="NonExistentCategory", date="30.04.2024 00:00:00"
+    )
+    assert total_spending == 0.0
 
 
-def test_get_spending_by_category_empty_category(sample_transactions):
-    result = spending_by_category(sample_transactions, "nonexistent")
-    assert result == 0  # Ожидаемая сумма для несуществующей категории
+def test_spending_by_category_empty_transactions():
+    empty_transactions = pd.DataFrame(
+        columns=["Дата операции", "Категория", "Сумма операции"]
+    )
+
+    total_spending = spending_by_category(
+        empty_transactions, category="Супермаркеты", date="30.04.2024 00:00:00"
+    )
+    assert total_spending == 0.0
+
+
+if __name__ == "__main__":
+    pytest.main()

@@ -1,15 +1,3 @@
-#
-#
-#
-# load_dotenv("../.env")
-#
-
-#
-#
-
-#
-
-
 import os
 from datetime import datetime
 from typing import Any
