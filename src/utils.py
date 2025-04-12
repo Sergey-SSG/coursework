@@ -1,6 +1,18 @@
-import json
+#
+#
+#
+# load_dotenv("../.env")
+#
+
+#
+#
+
+#
+
+
 import os
 from datetime import datetime
+from typing import Any
 
 import pandas as pd
 import requests
@@ -34,7 +46,7 @@ def get_time_date(date_time: str, date_format: str = "%Y-%m-%d %H:%M:%S") -> tup
     return start_day.strftime(date_format_output), format_date.strftime(date_format_output)
 
 
-def slice_period(path_to_file: str, period_date: list):
+def slice_period(path_to_file: str, period_date: list) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Функция для страницы «Главная» извлекает детали транзакций для каждой карты:
     - последние 4 цифры карты;
     - общие расходы;
@@ -63,42 +75,50 @@ API_URL = "https://api.apilayer.com/exchangerates_data"
 headers = {"apikey": os.getenv("API_KEY_exchange")}
 
 
-def convert_to_rub() -> str:
+def convert_to_rub() -> list[dict[str, Any]]:
     """Функция принимает на вход транзакцию и возвращает сумму транзакции (amount) в рублях, тип данных —
     float. Если транзакция была в USD или EUR, происходит обращение к внешнему API для получения текущего курса валют и
     конвертации суммы операции в рубли."""
     currency_list = ["USD", "EUR"]
     convert_to = "RUB"
-    new_currency_list = []
+    currency_rates = []
 
     for currency in currency_list:
-        response = requests.get(f"{API_URL}/convert?from={currency}&to={convert_to}&amount=1", headers=headers)
+        try:
+            response = requests.get(f"{API_URL}/convert?from={currency}&to={convert_to}&amount=1", headers=headers)
+            response.raise_for_status()
+            conversion_data = response.json()
+            currency_value = conversion_data.get("result")
 
-        response.raise_for_status()
-        conversion_data = response.json()
-        currency_value = conversion_data.get("result")
+            if currency_value is not None:
+                currency_rates.append({"currency": currency, "rate": currency_value})
+            else:
+                print(f"Ошибка: ключ 'result' не найден в ответе для: {currency}")
+                currency_rates.append({"currency": currency, "rate": None})
 
-        if currency_value is not None:
-            new_currency_list.append(currency_value)
-        else:
-            print("Ошибка: ключ 'result' не найден в ответе для:", currency)
-    result_json = json.dumps(new_currency_list, indent=4)
-    return result_json
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при получении курса для {currency}: {e}")
+            currency_rates.append({"currency": currency, "rate": None})
+
+    return currency_rates
 
 
 API_URL_ = "https://api.twelvedata.com"
 API_KEY_stocks = os.getenv("Secret_key")
 
 
-def get_price_stocks() -> str:
+def get_price_stocks() -> list[dict[str, Any]]:
     """Функция, которая извлекает цены акций из списка S&P 500 путем вызова внешнего API."""
     stocks_list = ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
-    price_stocks = []
-
+    stock_prices = []
     for stock in stocks_list:
-        response = requests.get(f"{API_URL_}/price?symbol={stock}&apikey={API_KEY_stocks}")
-        dict_result = response.json()
-        price_element = dict_result.get("price")
-        price_stocks.append(price_element)
-    result_json = json.dumps(price_stocks, indent=4)
-    return result_json
+        try:
+            response = requests.get(f"{API_URL_}/price?symbol={stock}&apikey={API_KEY_stocks}")
+            data = response.json()
+            price = data.get("price")
+            stock_prices.append({"stock": stock, "price": price})
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data for {stock}: {e}")
+            stock_prices.append({"stock": stock, "price": None})
+
+    return stock_prices

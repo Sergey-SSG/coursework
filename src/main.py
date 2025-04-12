@@ -10,10 +10,6 @@ if __name__ == "__main__":
     result_views = main_info(date_request)
     print(result_views)
 
-    transactions_data = pd.read_excel(PATH_TO_FILE)
-    transactions_df = pd.DataFrame(transactions_data)
+    transactions_df = pd.read_excel(PATH_TO_FILE)
     print(search_transactions(transactions_df, "Дом и ремонт"))
-
-    transactions = pd.read_excel(PATH_TO_FILE)
-    transactions_df = pd.DataFrame(transactions)
-    print(spending_by_category(transactions_df, "Супермаркеты", "31.12.2021"))
+    print(spending_by_category(transactions_df, "Супермаркеты", "30.12.2021"))
